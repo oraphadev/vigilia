@@ -1,0 +1,13 @@
+services:
+  vigilia:
+    build: .
+    ports:
+      - '3210:3210'
+    environment:
+      - PORT=3210
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'wget', '-qO-', 'http://localhost:3210/health']
+      interval: 30s
+      timeout: 5s
+      retries: 3

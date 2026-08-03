@@ -19,17 +19,7 @@ import {
   TEAM_SIZES,
 } from '../src/index.js';
 
-/** RNG determinístico simples (mulberry32). */
-function seededRng(seed: number) {
-  let a = seed;
-  return () => {
-    a |= 0;
-    a = (a + 0x6d2b79f5) | 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
+import { seededRng } from './rng.js';
 
 function makeGame(playerCount: number, seed = 42): GameState {
   const state = createGame('ABCDE', { id: 'p0', name: 'Jogador 0', avatar: 0 });

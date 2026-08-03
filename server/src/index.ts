@@ -21,7 +21,9 @@ import {
 } from '@vigilia/shared';
 import { Room, RoomManager } from './rooms.js';
 
-const PORT = Number(process.env.PORT ?? 3000);
+const PORT = Number(process.env.PORT ?? 3210);
+/** Tempo que o anfitrião tem para reconectar antes de perder o posto. */
+const HOST_MIGRATION_GRACE_MS = 15_000;
 const app = express();
 const httpServer = createServer(app);
 const io = new Server<ClientToServerEvents, ServerToClientEvents>(httpServer, {
@@ -171,14 +173,21 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     if (!data.room || !data.playerId) return;
     const room = data.room;
+    const playerId = data.playerId;
     // Só marca desconectado se este ainda for o socket ativo do jogador.
-    if (room.sockets.get(data.playerId) === socket.id) {
-      room.sockets.delete(data.playerId);
-      setConnected(room.state, data.playerId, false);
-      migrateHost(room.state);
-      room.updateEmptiness();
-      broadcast(room);
-    }
+    if (room.sockets.get(playerId) !== socket.id) return;
+    room.sockets.delete(playerId);
+    setConnected(room.state, playerId, false);
+    room.updateEmptiness();
+    broadcast(room);
+    // Um refresh não destrona o anfitrião: migra só se ele não voltar a tempo.
+    setTimeout(() => {
+      const player = room.state.players.find((p) => p.id === playerId);
+      if (player?.isHost && !player.connected) {
+        migrateHost(room.state);
+        broadcast(room);
+      }
+    }, HOST_MIGRATION_GRACE_MS).unref();
   });
 });
 
