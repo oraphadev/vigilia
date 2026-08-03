@@ -1,0 +1,19 @@
+{
+  "name": "vigilia",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.14.0",
+  "scripts": {
+    "dev": "concurrently -k -n server,client -c yellow,cyan \"pnpm --filter @vigilia/server dev\" \"pnpm --filter @vigilia/client dev\"",
+    "build": "pnpm --filter @vigilia/client build",
+    "start": "pnpm --filter @vigilia/server start",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -p shared && tsc -p server && tsc -p client"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "typescript": "^5.7.3",
+    "vitest": "^3.0.5"
+  }
+}
