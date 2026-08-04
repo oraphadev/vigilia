@@ -21,7 +21,7 @@ const FOCUSABLE = [
  *
  * Enquanto ativo: foca o primeiro elemento focável, cicla Tab/Shift+Tab dentro do
  * container e chama `onEscape` no Escape. Ao desativar (ou desmontar), devolve o
- * foco a quem o tinha antes — sem isso, o teclado cai no topo da página.
+ * foco a quem o tinha antes; sem isso, o teclado cai no topo da página.
  */
 export function useFocusTrap(
   active: boolean,

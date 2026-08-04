@@ -75,7 +75,7 @@ export function Game({ view }: { view: PlayerView }) {
         {danger && view.phase !== 'roleReveal' && (
           <p className="center" style={{ color: 'var(--danger)', fontSize: 13, fontWeight: 600 }} role="status">
             Restam {MAX_REJECTIONS - view.attempt}{' '}
-            {MAX_REJECTIONS - view.attempt === 1 ? 'proposta' : 'propostas'} antes do Colapso — depois disso o
+            {MAX_REJECTIONS - view.attempt === 1 ? 'proposta' : 'propostas'} antes do Colapso. Depois disso, o
             Eclipse vence.
           </p>
         )}
@@ -186,7 +186,7 @@ function RosterWaiting({
 
 /**
  * "Meu papel" sob demanda: revela apenas enquanto o dedo (ou a tecla) segura.
- * Nada do segredo fica em repouso na tela — soltou, sumiu.
+ * Nada do segredo fica em repouso na tela: soltou, sumiu.
  */
 function RolePeek({ view }: { view: PlayerView }) {
   const [held, setHeld] = useState(false);
@@ -274,7 +274,7 @@ function RolePeek({ view }: { view: PlayerView }) {
   );
 }
 
-/** Saída discreta do anfitrião — nunca compete com as ações de jogo. */
+/** Saída discreta do anfitrião; nunca compete com as ações de jogo. */
 function HostMenu({ view, act }: { view: PlayerView; act: (event: string, payload?: unknown) => Promise<boolean> }) {
   if (!view.you.isHost) return null;
   const offline = view.players.filter((p) => !p.connected);
@@ -283,7 +283,7 @@ function HostMenu({ view, act }: { view: PlayerView; act: (event: string, payloa
     <div className="stack center" style={{ gap: 6, marginTop: 'auto', paddingTop: 10, opacity: 0.75 }}>
       {offline.length > 0 && (
         <p className="muted" style={{ fontSize: 12 }}>
-          {offline.map((p) => p.name).join(', ')} {offline.length === 1 ? 'sumiu' : 'sumiram'} da vigília — a fase
+          {offline.map((p) => p.name).join(', ')} {offline.length === 1 ? 'sumiu' : 'sumiram'} da vigília e a fase
           pode travar.
         </p>
       )}
@@ -319,7 +319,7 @@ function RoleReveal({ view }: { view: PlayerView }) {
             Seu segredo está guardado.
           </h2>
           <p className="muted" style={{ fontSize: 14 }}>
-            Esqueceu? Segure “🕯 Meu papel” no topo — ninguém mais vê.
+            Esqueceu? Segure “🕯 Meu papel” no topo. Ninguém mais vê.
           </p>
         </div>
 
@@ -419,7 +419,7 @@ function TeamSelect({ view, leaderName }: { view: PlayerView; leaderName: string
   const pending = useStore((s) => s.pending);
   const size = view.teamSizes[view.round] ?? 0;
   const isLeader = view.you.isLeader;
-  // Retoma o rascunho que o servidor já publica — reconectar não apaga a escolha em curso.
+  // Retoma o rascunho que o servidor já publica; reconectar não apaga a escolha em curso.
   const [picked, setPicked] = useState<string[]>(() => (isLeader ? view.draftTeam.slice(0, size) : []));
 
   const draftTimer = useRef<number | undefined>(undefined);
@@ -509,7 +509,7 @@ function TeamSelect({ view, leaderName }: { view: PlayerView; leaderName: string
           </button>
         ) : (
           <p className="muted center" style={{ fontSize: 13 }}>
-            Aguarde a proposta — depois todos votam.
+            Aguarde a proposta. Depois, todos votam.
           </p>
         )}
       </div>
@@ -567,7 +567,7 @@ function Voting({ view, leaderName }: { view: PlayerView; leaderName: string }) 
               <p className="muted" style={{ fontSize: 13 }}>
                 {view.attempt >= 2
                   ? 'Cuidado: 5 rejeições seguidas entregam a cidade ao Eclipse.'
-                  : 'Aprovar envia a patrulha ao farol. Rejeitar passa o comando adiante — é assim que se mantém um suspeito fora da expedição.'}
+                  : 'Aprovar envia a patrulha ao farol. Rejeitar passa o comando adiante: é assim que se mantém um suspeito fora da expedição.'}
               </p>
             )}
 
@@ -629,11 +629,11 @@ function Mission({ view }: { view: PlayerView }) {
 
   function confirm() {
     if (choice === null) return;
-    // Sentinela que tenta apagar recebe a mesma recusa que o servidor daria —
+    // Sentinela que tenta apagar recebe a mesma recusa que o servidor daria:
     // local, breve e sem deixar rastro na tela de ninguém.
     if (!choice && !eclipse) {
       setChoice(null);
-      setBlocked('A chama não obedece — Sentinelas só podem acender.');
+      setBlocked('A chama não obedece: Sentinelas só podem acender.');
       return;
     }
     void act('game:card', { light: choice });
@@ -710,7 +710,7 @@ function Mission({ view }: { view: PlayerView }) {
 
             {/* Idêntico para as duas facções: a tela não denuncia ninguém. */}
             <p className="muted center" style={{ fontSize: 13 }}>
-              Sua escolha é secreta — as ações são reveladas embaralhadas.
+              Sua escolha é secreta. As ações são reveladas embaralhadas.
             </p>
           </div>
         ) : (
@@ -754,7 +754,7 @@ function VoteRevealOverlay({
   currentLeaderId: string | null;
   onDone: () => void;
 }) {
-  // Ordem dos assentos, nunca a ordem em que votaram — hesitar não pode ser pista.
+  // Ordem dos assentos, nunca a ordem em que votaram: hesitar não pode ser pista.
   const entries = useMemo(
     () =>
       players
@@ -902,7 +902,7 @@ function MissionRevealOverlay({ record, onDone }: { record: MissionRecord; onDon
           {record.failCount === 0
             ? 'Nenhuma sabotagem entre as ações.'
             : `${record.failCount} ${record.failCount > 1 ? 'sabotagens' : 'sabotagem'} entre as ações${
-                !success ? '' : ` — mas esta expedição exigia ${record.failsRequired}.`
+                !success ? '' : `, mas esta expedição exigia ${record.failsRequired}.`
               }`}
         </motion.p>
         <button className="btn btn-primary btn-block" onClick={onDone}>

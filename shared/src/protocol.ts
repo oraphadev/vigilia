@@ -1,6 +1,6 @@
 import type { GameErrorCode, PlayerView } from './types.js';
 
-/** Contrato Socket.IO — cliente → servidor. */
+/** Contrato Socket.IO: cliente → servidor. */
 export interface ClientToServerEvents {
   'room:create': (
     payload: { name: string; avatar: number },
@@ -26,11 +26,11 @@ export interface ClientToServerEvents {
   'game:abort': (ack: (reply: Reply) => void) => void;
 }
 
-/** Contrato Socket.IO — servidor → cliente. */
+/** Contrato Socket.IO: servidor → cliente. */
 export interface ServerToClientEvents {
   state: (view: PlayerView) => void;
   kicked: () => void;
-  /** Outra aba assumiu esta sessão — este socket vai cair; não reconecte. */
+  /** Outra aba assumiu esta sessão; este socket vai cair; não reconecte. */
   displaced: () => void;
 }
 

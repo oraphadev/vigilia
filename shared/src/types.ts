@@ -50,7 +50,7 @@ export interface RoundHistory {
   mission?: MissionRecord;
 }
 
-/** Estado canônico completo — vive apenas no servidor. */
+/** Estado canônico completo; vive apenas no servidor. */
 export interface GameState {
   code: string;
   phase: Phase;
@@ -72,16 +72,16 @@ export interface GameState {
   votes: Record<string, boolean>;
   /** Segredo para sempre (revelado apenas agregado): true = Acender. */
   missionCards: Record<string, boolean>;
-  /** Última votação resolvida — o cliente anima a revelação a partir daqui. */
+  /** Última votação resolvida; o cliente anima a revelação a partir daqui. */
   lastVote: VoteRecord | null;
-  /** Última expedição resolvida — idem. */
+  /** Última expedição resolvida; idem. */
   lastMission: MissionRecord | null;
   history: RoundHistory[];
   winner: Faction | null;
   winReason: WinReason | null;
   /** Quantas partidas já foram jogadas nesta sala (gira o comandante inicial). */
   gamesPlayed: number;
-  /** Placar acumulado da noite — sobrevive a novas partidas na mesma sala. */
+  /** Placar acumulado da noite; sobrevive a novas partidas na mesma sala. */
   tally: { sentinela: number; eclipse: number };
 }
 
@@ -106,7 +106,7 @@ export interface PlayerView {
   you: {
     id: string;
     faction: Faction | null;
-    /** Ids dos demais agentes Eclipse — presente apenas se você for Eclipse. */
+    /** Ids dos demais agentes Eclipse; presente apenas se você for Eclipse. */
     conspirators: string[] | null;
     isHost: boolean;
     isLeader: boolean;
@@ -163,5 +163,5 @@ export class GameError extends Error {
   }
 }
 
-/** Fonte de aleatoriedade injetável — determinística nos testes. */
+/** Fonte de aleatoriedade injetável; determinística nos testes. */
 export type Rng = () => number;

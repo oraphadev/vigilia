@@ -45,7 +45,7 @@ function Displaced() {
           Você abriu VIGÍLIA em outra aba.
         </h1>
         <p className="muted">
-          A partida continua lá. Para jogar daqui, retome a vigília nesta aba — a outra será
+          A partida continua lá. Para jogar daqui, retome a vigília nesta aba. A outra será
           encerrada.
         </p>
         <button type="button" className="btn btn-primary" onClick={resumeHere}>

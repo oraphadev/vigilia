@@ -104,7 +104,7 @@ export function addPlayer(state: GameState, player: Omit<PlayerState, 'connected
   state.players.push({ ...player, name, connected: true, isHost: false });
 }
 
-/** Remove um jogador (saída voluntária ou expulsão pelo anfitrião — apenas no lobby). */
+/** Remove um jogador (saída voluntária ou expulsão pelo anfitrião; apenas no lobby). */
 export function removePlayer(state: GameState, playerId: string): void {
   requirePhase(state, 'lobby', 'gameOver');
   const index = state.players.findIndex((p) => p.id === playerId);
@@ -173,7 +173,7 @@ export function ackRole(state: GameState, playerId: string): void {
 }
 
 /**
- * Rascunho ao vivo da patrulha — só informativo, nunca compromete o comandante.
+ * Rascunho ao vivo da patrulha: só informativo, nunca compromete o comandante.
  * Excesso de nomes é cortado em silêncio: rascunho não é ação inválida.
  */
 export function setDraft(state: GameState, playerId: string, team: string[]): void {
@@ -348,7 +348,7 @@ export function returnToLobby(state: GameState, hostId: string): void {
 
 /**
  * Escotilha de emergência do anfitrião: encerra uma partida travada (jogador
- * sumido, sala presa numa fase) sem vencedor — nada é somado ao placar.
+ * sumido, sala presa numa fase) sem vencedor; nada é somado ao placar.
  */
 export function abortGame(state: GameState, hostId: string): void {
   requirePhase(state, 'roleReveal', 'teamSelect', 'voting', 'mission', 'gameOver');

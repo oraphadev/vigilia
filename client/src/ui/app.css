@@ -83,7 +83,7 @@ b {
 }
 
 /* A névoa anima só transform (composite-only). O blur é estático,
-   aplicado uma vez na camada — nunca recalculado por frame. */
+   aplicado uma vez na camada, nunca recalculado por frame. */
 .mist {
   position: fixed;
   left: -20%;
@@ -399,7 +399,7 @@ b {
 }
 
 /* O halo vive num pseudo-elemento com box-shadow ESTÁTICO;
-   só a opacidade anima — nada de recalcular sombra por frame. */
+   só a opacidade anima; nada de recalcular sombra por frame. */
 .beacon-light::after {
   content: '';
   position: absolute;
@@ -511,7 +511,7 @@ b {
   background: rgba(20, 27, 46, 0.7);
   font-size: 13px;
   font-weight: 600;
-  /* Um chip nunca quebra o próprio conteúdo — a barra é que quebra a linha. */
+  /* Um chip nunca quebra o próprio conteúdo; a barra é que quebra a linha. */
   white-space: nowrap;
 }
 
@@ -1014,7 +1014,7 @@ b {
   }
 }
 
-/* Alvos mínimos de 44px em telas de toque (ou estreitas — nem todo touch se
+/* Alvos mínimos de 44px em telas de toque (ou estreitas; nem todo touch se
    declara coarse, e telas estreitas são celular na prática). */
 @media (pointer: coarse), (max-width: 600px) {
   .btn-sm {

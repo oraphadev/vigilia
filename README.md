@@ -5,11 +5,11 @@
 **Jogue agora: [joguevigilia.com.br](https://joguevigilia.com.br)**
 
 Jogo web multiplayer de **dedução social** para 5–10 jogadores, com IP 100% original.
-Lumen, a última cidade, flutua sobre um mar de névoa viva. Cinco faróis a mantêm de pé —
+Lumen, a última cidade, flutua sobre um mar de névoa viva. Cinco faróis a mantêm de pé,
 e o **Círculo do Eclipse** infiltrou a guarda para apagá-los, um a um.
 
 - **Sentinelas da Chama** (maioria leal): acendam 3 faróis para vencer.
-- **Agentes do Eclipse** (minoria infiltrada, que se conhece): apaguem 3 faróis — ou
+- **Agentes do Eclipse** (minoria infiltrada; eles se conhecem entre si): apaguem 3 faróis, ou
   derrubem a confiança da cidade com 5 patrulhas rejeitadas seguidas (**Colapso da Confiança**).
 
 O jogo é inspirado apenas nas **mecânicas abstratas** do gênero (liderança rotativa,
@@ -48,7 +48,7 @@ npx tsx scripts/simulate.ts   # partida completa com 5 clientes socket reais (se
 | `server/` | Node + Express + Socket.IO. **Autoridade total**: valida cada ação no motor e emite a cada jogador apenas a sua visão redigida. Salas por código, reconexão por token, migração de anfitrião com carência. |
 | `client/` | Vite + React 19 + zustand + framer-motion. Máquina de telas dirigida pelo estado do servidor; design system próprio; mobile-first. |
 
-**Anti-cheat por construção:** papéis alheios só chegam ao socket de um agente do Eclipse;
+**Anti-cheat por construção:** papéis alheios só chegam aos sockets dos agentes do Eclipse;
 votos individuais só após a apuração; cartas de expedição só agregadas e embaralhadas.
 Sentinela tentando sabotar é recusado pelo servidor.
 

@@ -1,5 +1,5 @@
 :root {
-  /* Paleta — noite de Lumen */
+  /* Paleta: noite de Lumen */
   --abyss: #0a0e1a;
   --abyss-deep: #060910;
   --mist: #141b2e;
@@ -29,7 +29,7 @@
   --radius-lg: 22px;
   --col-width: 560px;
 
-  /* Superfícies reutilizadas — um só gradiente por família de peça */
+  /* Superfícies reutilizadas: um só gradiente por família de peça */
   --surface-disc: radial-gradient(circle at 32% 28%, var(--mist-raised), var(--abyss-deep));
   --surface-card: linear-gradient(170deg, var(--mist-raised), var(--abyss-deep));
   --surface-panel: linear-gradient(160deg, rgba(25, 33, 59, 0.94), rgba(15, 21, 36, 0.97));

@@ -63,4 +63,4 @@ function spawnBot(name: string, index: number): void {
 }
 
 for (let i = 0; i < count; i++) spawnBot(NAMES[i % NAMES.length]!, i);
-console.log(`${count} bots entrando na sala ${code} em ${URL} — Ctrl+C para encerrar.`);
+console.log(`${count} bots entrando na sala ${code} em ${URL}. Ctrl+C para encerrar.`);

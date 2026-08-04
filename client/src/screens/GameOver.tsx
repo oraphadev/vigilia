@@ -20,14 +20,14 @@ export function GameOver({ view }: { view: PlayerView }) {
   async function share() {
     const text = `${sentinelsWon ? '🔥' : '🌑'} ${
       sentinelsWon ? 'A Chama' : 'O Eclipse'
-    } venceu em VIGÍLIA — faróis ${lit}×${doused}. Jogue: ${location.origin}`;
+    } venceu em VIGÍLIA: faróis ${lit}×${doused}. Jogue: ${location.origin}`;
 
     if (typeof navigator !== 'undefined' && navigator.share) {
       try {
         await navigator.share({ text });
         return;
       } catch {
-        return; // Cancelou o compartilhamento — nada a dizer.
+        return; // Cancelou o compartilhamento; nada a dizer.
       }
     }
     try {
@@ -62,7 +62,7 @@ export function GameOver({ view }: { view: PlayerView }) {
           {view.winReason === 'colapso'
             ? 'Cinco patrulhas rejeitadas: a confiança ruiu e a névoa subiu.'
             : sentinelsWon
-              ? 'Três faróis acesos afastaram a névoa — desta vez.'
+              ? 'Três faróis acesos afastaram a névoa. Desta vez.'
               : 'Três faróis apagados. A névoa tomou as ruas.'}
         </p>
         <p style={{ fontWeight: 600, color: youWon ? 'var(--flame)' : 'var(--faded)' }}>
@@ -99,7 +99,7 @@ export function GameOver({ view }: { view: PlayerView }) {
           <h2 className="display center" style={{ fontSize: 20 }}>Como o Eclipse agiu</h2>
           {missions.length === 0 ? (
             <p className="muted center" style={{ fontSize: 14 }}>
-              Nenhuma patrulha chegou a um farol — a desconfiança fez o trabalho sozinha.
+              Nenhuma patrulha chegou a um farol: a desconfiança fez o trabalho sozinha.
             </p>
           ) : (
             missions.map((mission, i) => {
@@ -117,7 +117,7 @@ export function GameOver({ view }: { view: PlayerView }) {
                     {success ? '🔥 acesa' : '🌑 apagada'}
                   </span>
                   {!success && mission.saboteurs.length > 0 && (
-                    <span className="muted"> — sabotada por {mission.saboteurs.map(nameOf).join(', ')}</span>
+                    <span className="muted"> · sabotada por {mission.saboteurs.map(nameOf).join(', ')}</span>
                   )}
                 </motion.p>
               );

@@ -2,7 +2,7 @@ import { ECLIPSE_COUNT, failsRequiredTable, TEAM_SIZES } from './constants.js';
 import { leaderId } from './engine.js';
 import type { GameState, MissionRecord, PlayerView, PublicPlayer, RoundHistory } from './types.js';
 
-/** Fora de gameOver a autoria da sabotagem é apagada — clonando, nunca por referência. */
+/** Fora de gameOver a autoria da sabotagem é apagada (clonando, nunca por referência). */
 function redactMission(mission: MissionRecord, gameOver: boolean): MissionRecord {
   return gameOver ? { ...mission, saboteurs: [...mission.saboteurs] } : { ...mission, saboteurs: [] };
 }
@@ -17,7 +17,7 @@ function redactHistory(history: RoundHistory[], gameOver: boolean): RoundHistory
 
 /**
  * Produz a visão de UM jogador a partir do estado canônico.
- * Única porta de saída de dados do servidor — se não está aqui, não vaza.
+ * Única porta de saída de dados do servidor: se não está aqui, não vaza.
  */
 export function viewFor(state: GameState, playerId: string): PlayerView {
   const currentLeaderId = leaderId(state);

@@ -4,7 +4,7 @@ import type { Faction, MissionOutcome, Phase, PublicPlayer } from '@vigilia/shar
 import { useStore } from '../store.js';
 import { useFocusTrap } from './useFocusTrap.js';
 
-/** Emblemas dos vigilantes — glifos abstratos, um por avatar. */
+/** Emblemas dos vigilantes: glifos abstratos, um por avatar. */
 export const AVATAR_GLYPHS = ['✶', '☾', '✦', '❋', '◆', '✹', '❂', '✧', '✺', '✪'] as const;
 
 export function glyphFor(avatar: number): string {
@@ -48,7 +48,7 @@ export function Stage({ children }: { children: ReactNode }) {
 }
 
 /**
- * A troca de fase é puramente visual — quem usa leitor de tela não a percebe.
+ * A troca de fase é puramente visual; quem usa leitor de tela não a percebe.
  * Anuncia só na MUDANÇA: o texto é escrito num efeito, então a live region
  * já está montada quando muda (região montada junto com o texto não é lida).
  */
@@ -89,7 +89,7 @@ function Toasts() {
 }
 
 /**
- * Sem conexão, a tela por baixo está defasada — tocar nela só gera ações que
+ * Sem conexão, a tela por baixo está defasada; tocar nela só gera ações que
  * o servidor vai recusar. O overlay bloqueia em vez de avisar de canto.
  */
 function ReconnectOverlay() {
@@ -109,7 +109,7 @@ function ReconnectOverlay() {
         <span className="spinner" style={{ width: 28, height: 28 }} aria-hidden />
         <p style={{ fontWeight: 600 }}>Reacendendo a conexão…</p>
         <p className="muted" style={{ fontSize: 14 }}>
-          Suas ações continuam valendo — só um instante.
+          Suas ações continuam valendo. Só um instante.
         </p>
       </div>
     </div>
@@ -203,7 +203,7 @@ export function Beacons({
   teamSizes: number[];
   failsRequired: number[];
   currentRound: number;
-  /** Facção a um passo da vitória — anunciada em texto, sem mexer no placar. */
+  /** Facção a um passo da vitória; anunciada em texto, sem mexer no placar. */
   matchPoint?: Faction | null;
 }) {
   const lit = results.filter((r) => r === 'sucesso').length;

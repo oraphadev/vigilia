@@ -28,7 +28,7 @@ export function Lobby({ view }: { view: PlayerView }) {
         ? 'chip chip--eclipse'
         : 'chip';
 
-  /** O código gigante copia só o código — o feedback ocupa o lugar do subtítulo. */
+  /** O código gigante copia só o código; o feedback ocupa o lugar do subtítulo. */
   async function copyCode() {
     try {
       await navigator.clipboard.writeText(view.code);
@@ -41,7 +41,7 @@ export function Lobby({ view }: { view: PlayerView }) {
 
   /** CTA único de convite: compartilha código + link, com cópia como plano B. */
   async function invite() {
-    const text = `Entre na minha sala em VIGÍLIA. Código ${view.code} — ${inviteUrl}`;
+    const text = `Entre na minha sala em VIGÍLIA. Código ${view.code}: ${inviteUrl}`;
     if (navigator.share) {
       try {
         await navigator.share({ title: 'VIGÍLIA', text, url: inviteUrl });
@@ -175,10 +175,10 @@ export function Lobby({ view }: { view: PlayerView }) {
         </div>
         <p className="muted" style={{ fontSize: 14 }}>
           Patrulhas por expedição: {TEAM_SIZES[effective]!.join(' · ')}
-          {effective >= 7 && ' — a 4ª exige duas sabotagens para falhar.'}
+          {effective >= 7 && '. A 4ª exige duas sabotagens para falhar.'}
         </p>
         <p className="muted" style={{ fontSize: 14 }}>
-          Entrem todos numa chamada de voz ou fiquem na mesma sala — o jogo acontece na conversa.
+          Entrem todos numa chamada de voz ou fiquem na mesma sala: o jogo acontece na conversa.
         </p>
       </section>
 

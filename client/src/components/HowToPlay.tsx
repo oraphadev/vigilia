@@ -5,28 +5,28 @@ import { useStore } from '../store.js';
 
 /** As três frases que bastam para começar a jogar. */
 const ESSENTIALS: string[] = [
-  'Cada vigilante recebe um papel secreto. A maioria é Sentinela; a minoria infiltrada é do Eclipse — e se conhece.',
+  'Cada vigilante recebe um papel secreto. A maioria é Sentinela; os infiltrados do Eclipse são minoria e se conhecem entre si.',
   'O Comandante propõe uma patrulha, todos votam, e a patrulha aprovada age em segredo.',
-  '3 faróis acesos: as Sentinelas vencem. 3 apagados — ou 5 propostas rejeitadas seguidas: o Eclipse vence.',
+  '3 faróis acesos: as Sentinelas vencem. 3 apagados, ou 5 propostas rejeitadas seguidas: o Eclipse vence.',
 ];
 
-/** Páginas detalhadas — o mesmo tour de sempre, agora atrás do essencial. */
+/** Páginas detalhadas: o mesmo tour de sempre, agora atrás do essencial. */
 const DETAILS: { title: string; body: string }[] = [
   {
     title: 'Bem-vindo a Lumen',
-    body: 'A última cidade flutua sobre um mar de névoa que devora tudo o que a luz não alcança. Cinco faróis a mantêm viva — e alguém entre vocês quer apagá-los.',
+    body: 'A última cidade flutua sobre um mar de névoa que devora tudo o que a luz não alcança. Cinco faróis a mantêm viva. E alguns entre vocês querem apagá-los.',
   },
   {
     title: 'Dois lados, um segredo',
-    body: 'A maioria são Sentinelas da Chama, leais à cidade. Alguns são agentes do Eclipse: eles se conhecem, você não sabe quem são. Seu papel é secreto — observe, converse, desconfie.',
+    body: 'A maioria são Sentinelas da Chama, leais à cidade. Alguns são agentes do Eclipse: eles se conhecem, você não sabe quem são. Seu papel é secreto: observe, converse, desconfie.',
   },
   {
     title: 'A patrulha e o voto',
-    body: 'A cada expedição, o Comandante da vez propõe uma patrulha. Todos votam: aprovar ou rejeitar. Empate rejeita. Cuidado — cinco rejeições seguidas entregam a cidade ao Eclipse.',
+    body: 'A cada expedição, o Comandante da vez propõe uma patrulha. Todos votam: aprovar ou rejeitar. Empate rejeita. Cuidado: cinco rejeições seguidas entregam a cidade ao Eclipse.',
   },
   {
     title: 'A expedição',
-    body: 'A patrulha aprovada age em segredo: Sentinelas sempre acendem o farol; agentes do Eclipse podem apagá-lo. Uma única sabotagem basta para a expedição falhar (algumas exigem duas — marcadas com •).',
+    body: 'A patrulha aprovada age em segredo: Sentinelas sempre acendem o farol; agentes do Eclipse podem apagá-lo. Uma única sabotagem basta para a expedição falhar (algumas exigem duas, marcadas com •).',
   },
   {
     title: 'Como vencer',
@@ -131,7 +131,7 @@ function Essentials() {
           lineHeight: 1.5,
         }}
       >
-        VIGÍLIA se joga conversando — fiquem na mesma sala ou numa chamada de voz. O app registra propostas, votos e
+        VIGÍLIA se joga conversando: fiquem na mesma sala ou numa chamada de voz. O app registra propostas, votos e
         resultados; a acusação, o blefe e a defesa acontecem entre vocês.
       </p>
     </div>

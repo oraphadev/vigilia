@@ -7,8 +7,8 @@ const NAME_KEY = 'vigilia.name';
 const AVATAR_KEY = 'vigilia.avatar';
 const TUTORIAL_KEY = 'vigilia.tutorialSeen';
 
-const IDLE_TITLE = 'VIGÍLIA — Mantenha as luzes acesas';
-const ALERT_TITLE = '● Sua vez — VIGÍLIA';
+const IDLE_TITLE = 'VIGÍLIA · Mantenha as luzes acesas';
+const ALERT_TITLE = '● Sua vez · VIGÍLIA';
 
 /** Espera antes de reoferecer a retomada quando a rede engasgou. */
 const RESUME_RETRY_MS = 1500;
@@ -31,12 +31,12 @@ export interface Toast {
 interface AppState {
   stage: Stage;
   view: PlayerView | null;
-  /** Conectado outrora e caiu — mostra overlay bloqueante de reconexão. */
+  /** Conectado outrora e caiu: mostra overlay bloqueante de reconexão. */
   reconnecting: boolean;
-  /** Esta sessão foi assumida por outra aba — nada de reconectar sozinho. */
+  /** Esta sessão foi assumida por outra aba: nada de reconectar sozinho. */
   displaced: boolean;
   busy: boolean;
-  /** Nome do evento em voo por `act` — null quando não há nada pendente. */
+  /** Nome do evento em voo por `act`; null quando não há nada pendente. */
   pending: string | null;
   toasts: Toast[];
   name: string;
@@ -60,7 +60,7 @@ interface AppState {
 }
 
 let toastSeq = 0;
-/** Estado anterior de "precisa agir" — vive fora do store para não causar render. */
+/** Estado anterior de "precisa agir"; vive fora do store para não causar render. */
 let attentionOn = false;
 let resumeTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -100,7 +100,7 @@ export const useStore = create<AppState>((set, get) => ({
   dismissToast: (id) => set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })),
 
   boot: () => {
-    // StrictMode monta efeitos duas vezes em dev — registra listeners uma única vez.
+    // StrictMode monta efeitos duas vezes em dev; registra listeners uma única vez.
     if (socket.hasListeners('state')) return;
 
     /** Tenta retomar a sessão guardada. Só descarta o token se o servidor negar. */
@@ -118,7 +118,7 @@ export const useStore = create<AppState>((set, get) => ({
           if (error.code === 'ROOM_NOT_FOUND') localStorage.removeItem(TOKEN_KEY);
           return false;
         }
-        // Rede/timeout: o jogador PODE continuar na partida — segura o token e insiste.
+        // Rede/timeout: o jogador PODE continuar na partida: segura o token e insiste.
         set({ reconnecting: true });
         scheduleResume();
         return true;

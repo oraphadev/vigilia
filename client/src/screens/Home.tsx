@@ -24,7 +24,7 @@ export function Home() {
   const nameValid = name.trim().length >= 2;
   const codeValid = code.trim().length === 5;
 
-  // Primeira visita abre o tutorial — mas nunca por cima de quem chegou por convite.
+  // Primeira visita abre o tutorial, mas nunca por cima de quem chegou por convite.
   useEffect(() => {
     if (!tutorialSeen && !invited) setTutorialOpen(true);
   }, [tutorialSeen, invited]);

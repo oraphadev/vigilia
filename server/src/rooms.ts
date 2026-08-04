@@ -74,7 +74,7 @@ export class RoomManager {
   get(code: string): Room {
     const room = this.rooms.get(code.toUpperCase());
     if (!room) {
-      throw Object.assign(new Error('Sala não encontrada — confira o código.'), {
+      throw Object.assign(new Error('Sala não encontrada. Confira o código.'), {
         code: 'ROOM_NOT_FOUND',
       });
     }
