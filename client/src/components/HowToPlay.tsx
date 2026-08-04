@@ -13,7 +13,7 @@ const ESSENTIALS: string[] = [
 /** Páginas detalhadas: o mesmo tour de sempre, agora atrás do essencial. */
 const DETAILS: { title: string; body: string }[] = [
   {
-    title: 'Bem-vindo a Lumen',
+    title: 'Boas-vindas a Lumen',
     body: 'A última cidade flutua sobre um mar de névoa que devora tudo o que a luz não alcança. Cinco faróis a mantêm viva. E alguns entre vocês querem apagá-los.',
   },
   {
@@ -71,7 +71,7 @@ export function HowToPlay({ open, onClose }: { open: boolean; onClose: () => voi
           {page === 0 ? (
             <>
               <button className="btn btn-primary btn-block" onClick={finish}>
-                Estou pronto
+                Entendi tudo
               </button>
               <button className="btn btn-ghost btn-block" onClick={() => setPage(1)}>
                 Ver regras completas
@@ -88,7 +88,7 @@ export function HowToPlay({ open, onClose }: { open: boolean; onClose: () => voi
                 </button>
               ) : (
                 <button className="btn btn-primary grow" onClick={finish}>
-                  Estou pronto
+                  Entendi tudo
                 </button>
               )}
             </div>

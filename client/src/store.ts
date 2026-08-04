@@ -145,7 +145,7 @@ export const useStore = create<AppState>((set, get) => ({
       localStorage.removeItem(TOKEN_KEY);
       set({ stage: 'home', view: null, reconnecting: false });
       syncAttention(null);
-      get().toast('Você foi removido da sala pelo anfitrião.', 'info');
+      get().toast('O anfitrião removeu você da sala.', 'info');
     });
 
     socket.on('displaced', () => {

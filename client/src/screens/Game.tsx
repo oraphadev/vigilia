@@ -178,7 +178,7 @@ function RosterWaiting({
         ))}
       </div>
       <p className="muted center" style={{ fontSize: 13 }} role="status">
-        {remaining === 0 ? 'Todos prontos.' : `Faltam ${remaining} de ${players.length}`}
+        {remaining === 0 ? 'Todo mundo a postos.' : `Faltam ${remaining} de ${players.length}`}
       </p>
     </div>
   );
@@ -373,7 +373,7 @@ function RoleReveal({ view }: { view: PlayerView }) {
                 </h2>
                 <p style={{ fontSize: 15 }}>
                   {eclipse
-                    ? 'Apague os faróis sem ser descoberto. Vote, converse e sabote como se fosse leal.'
+                    ? 'Apague os faróis sem levantar suspeitas. Vote, converse e sabote como se fosse leal.'
                     : 'Proteja Lumen. Descubra quem serve ao Eclipse e mantenha-os longe das patrulhas.'}
                 </p>
                 {eclipse && view.you.conspirators && (
