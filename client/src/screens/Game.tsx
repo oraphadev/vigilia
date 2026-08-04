@@ -229,23 +229,13 @@ function RolePeek({ view }: { view: PlayerView }) {
       <AnimatePresence>
         {held && (
           <motion.div
-            className="panel stack"
+            className="panel stack role-peek-pop"
             role="status"
             initial={{ opacity: 0, y: -6, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -4, scale: 0.98 }}
             transition={{ duration: 0.14, ease: 'easeOut' }}
-            style={{
-              position: 'absolute',
-              top: 'calc(100% + 10px)',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              width: 'min(78vw, 300px)',
-              zIndex: 30,
-              gap: 8,
-              textAlign: 'center',
-              pointerEvents: 'none',
-            }}
+            style={{ gap: 8 }}
           >
             <span style={{ fontSize: 30, lineHeight: 1 }}>{eclipse ? '🌑' : '🔥'}</span>
             <strong

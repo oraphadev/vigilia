@@ -492,7 +492,13 @@ b {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+}
+
+/* Quando a barra quebra em duas linhas, os botões ficam à direita da sua. */
+.status-bar > .row {
+  margin-left: auto;
 }
 
 .chip {
@@ -505,6 +511,8 @@ b {
   background: rgba(20, 27, 46, 0.7);
   font-size: 13px;
   font-weight: 600;
+  /* Um chip nunca quebra o próprio conteúdo — a barra é que quebra a linha. */
+  white-space: nowrap;
 }
 
 .chip .dot {
@@ -1006,8 +1014,9 @@ b {
   }
 }
 
-/* Alvos mínimos de 44px em telas de toque. */
-@media (pointer: coarse) {
+/* Alvos mínimos de 44px em telas de toque (ou estreitas — nem todo touch se
+   declara coarse, e telas estreitas são celular na prática). */
+@media (pointer: coarse), (max-width: 600px) {
   .btn-sm {
     min-height: 44px;
     padding: 0 16px;
@@ -1033,6 +1042,65 @@ b {
   .tutorial-dots:has(> button.pip) {
     gap: 36px;
   }
+}
+
+/* ===== Ajustes de telas estreitas ===== */
+@media (max-width: 380px) {
+  .column {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  /* 3 medalhões por linha em vez de 2. */
+  .medallion {
+    width: 64px;
+  }
+
+  .medallion-name {
+    max-width: 64px;
+  }
+
+  .eyebrow {
+    letter-spacing: 0.14em;
+  }
+
+  /* 6 pontos do tutorial numa linha só (os botões Anterior/Continuar são a
+     navegação primária; os pontos são atalho secundário). */
+  .tutorial-dots button.pip::after {
+    width: 34px;
+    height: 34px;
+  }
+
+  .tutorial-dots:has(> button.pip) {
+    gap: 26px;
+  }
+}
+
+/* A faixa de ação fixa só existe quando tem conteúdo. */
+.sticky-actions:not(:has(*)) {
+  display: none;
+}
+
+/* Em altura curta (celular deitado), fixar a ação no rodapé comeria a tela. */
+@media (max-height: 480px) {
+  .sticky-actions {
+    position: static;
+    background: none;
+    padding-top: 0;
+  }
+}
+
+/* Popover do "Meu papel": ancorado ao viewport, imune à posição do chip. */
+.role-peek-pop {
+  position: fixed;
+  top: calc(max(20px, env(safe-area-inset-top)) + 56px);
+  left: 12px;
+  right: 12px;
+  margin-inline: auto;
+  max-width: 320px;
+  z-index: 30;
+  text-align: center;
+  pointer-events: none;
 }
 
 /* ===== Utilidades ===== */
