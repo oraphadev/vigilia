@@ -2,6 +2,8 @@
 
 > Mantenha as luzes acesas. Ou apague-as por dentro.
 
+**Jogue agora: [joguevigilia.com.br](https://joguevigilia.com.br)**
+
 Jogo web multiplayer de **dedução social** para 5–10 jogadores, com IP 100% original.
 Lumen, a última cidade, flutua sobre um mar de névoa viva. Cinco faróis a mantêm de pé —
 e o **Círculo do Eclipse** infiltrou a guarda para apagá-los, um a um.
