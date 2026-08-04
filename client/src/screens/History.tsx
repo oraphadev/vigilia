@@ -1,6 +1,52 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { useMemo } from 'react';
-import type { PlayerView } from '@vigilia/shared';
+import { Fragment, useMemo } from 'react';
+import { useFocusTrap } from '../components/useFocusTrap.js';
+import type { Faction, PlayerView } from '@vigilia/shared';
+
+/** Consulta de nomes + facções reveladas usada por todo o registro. */
+interface Ledger {
+  nameOf: (id: string) => string;
+  factionOf: (id: string) => Faction | null;
+}
+
+/** Um nome no registro. Depois do fim de jogo, carrega a marca da facção. */
+function Who({ id, l, lead }: { id: string; l: Ledger; lead?: boolean }) {
+  const faction = l.factionOf(id);
+  const color = faction
+    ? faction === 'eclipse'
+      ? 'var(--eclipse)'
+      : 'var(--flame)'
+    : lead
+      ? 'var(--parchment)'
+      : undefined;
+
+  return (
+    <span
+      style={{ color, fontWeight: lead ? 700 : faction ? 600 : undefined }}
+      title={faction ? (faction === 'eclipse' ? 'Eclipse' : 'Sentinela') : undefined}
+    >
+      {l.nameOf(id)}
+      {faction && (
+        <span aria-hidden style={{ fontSize: '0.85em', marginLeft: 3 }}>
+          {faction === 'eclipse' ? '🌑' : '🔥'}
+        </span>
+      )}
+    </span>
+  );
+}
+
+function WhoList({ ids, l }: { ids: string[]; l: Ledger }) {
+  return (
+    <>
+      {ids.map((id, i) => (
+        <Fragment key={id}>
+          {i > 0 && ', '}
+          <Who id={id} l={l} />
+        </Fragment>
+      ))}
+    </>
+  );
+}
 
 export function HistoryDrawer({
   open,
@@ -12,7 +58,16 @@ export function HistoryDrawer({
   view: PlayerView;
 }) {
   const names = useMemo(() => new Map(view.players.map((p) => [p.id, p.name])), [view.players]);
-  const nameOf = (id: string) => names.get(id) ?? 'vigilante';
+  const panelRef = useFocusTrap(open, onClose);
+
+  const roles = view.rolesRevealed;
+  const ledger = useMemo<Ledger>(
+    () => ({
+      nameOf: (id) => names.get(id) ?? 'vigilante',
+      factionOf: (id) => roles?.[id] ?? null,
+    }),
+    [names, roles],
+  );
 
   return (
     <AnimatePresence>
@@ -25,7 +80,9 @@ export function HistoryDrawer({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           />
-          <motion.aside
+          <motion.div
+            role="complementary"
+            ref={panelRef}
             className="drawer-panel"
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
@@ -63,34 +120,50 @@ export function HistoryDrawer({
                     )}
                   </div>
 
-                  {round.attempts.length === 0 && <p className="muted" style={{ fontSize: 13 }}>Formando a primeira patrulha…</p>}
+                  {round.attempts.length === 0 && (
+                    <p className="muted" style={{ fontSize: 13 }}>Formando a patrulha…</p>
+                  )}
 
                   {round.attempts.map((attempt) => {
-                    const approvals = Object.values(attempt.votes).filter(Boolean).length;
+                    const entries = Object.entries(attempt.votes);
+                    const approvals = entries.filter(([, v]) => v).length;
+                    const against = entries.filter(([, v]) => !v).map(([id]) => id);
                     return (
                       <div key={attempt.attempt} className="history-attempt">
                         <span>
-                          <strong style={{ color: 'var(--parchment)' }}>{nameOf(attempt.leaderId)}</strong>{' '}
-                          propôs {attempt.team.map(nameOf).join(', ')}
+                          <Who id={attempt.leaderId} l={ledger} lead /> propôs{' '}
+                          <WhoList ids={attempt.team} l={ledger} />
                         </span>
                         <span>
-                          {attempt.approved ? '✓ aprovada' : '✕ rejeitada'} · {approvals} a favor,{' '}
-                          {Object.keys(attempt.votes).length - approvals} contra
-                        </span>
-                        <span style={{ fontSize: 12 }}>
-                          contra:{' '}
-                          {Object.entries(attempt.votes)
-                            .filter(([, v]) => !v)
-                            .map(([id]) => nameOf(id))
-                            .join(', ') || 'ninguém'}
+                          <span
+                            style={{
+                              color: attempt.approved ? 'var(--flame)' : 'var(--danger)',
+                              fontWeight: 600,
+                            }}
+                          >
+                            {attempt.approved ? '✓ aprovada' : '✕ rejeitada'} {approvals}×
+                            {entries.length - approvals}
+                          </span>
+                          {against.length > 0 && (
+                            <>
+                              {' · contra: '}
+                              <WhoList ids={against} l={ledger} />
+                            </>
+                          )}
                         </span>
                       </div>
                     );
                   })}
+
+                  {round.mission && round.mission.saboteurs.length > 0 && (
+                    <span className="chip chip--eclipse" style={{ alignSelf: 'flex-start' }}>
+                      🌑 Sabotaram: {round.mission.saboteurs.map(ledger.nameOf).join(', ')}
+                    </span>
+                  )}
                 </section>
               ))
             )}
-          </motion.aside>
+          </motion.div>
         </div>
       )}
     </AnimatePresence>

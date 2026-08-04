@@ -38,6 +38,13 @@ input {
   color: inherit;
 }
 
+/* O peso 700 não é carregado (evita um arquivo de fonte a mais);
+   o negrito da UI usa o 600 real em vez de bold sintético. */
+strong,
+b {
+  font-weight: 600;
+}
+
 :focus-visible {
   outline: 2px solid var(--flame);
   outline-offset: 3px;
@@ -75,6 +82,8 @@ input {
     radial-gradient(1.5px 1.5px at 8% 41%, rgba(233, 226, 208, 0.22) 50%, transparent 51%);
 }
 
+/* A névoa anima só transform (composite-only). O blur é estático,
+   aplicado uma vez na camada — nunca recalculado por frame. */
 .mist {
   position: fixed;
   left: -20%;
@@ -93,6 +102,7 @@ input {
   inset: 0;
   border-radius: 50% 50% 0 0;
   background: linear-gradient(to top, rgba(20, 27, 46, 0.95), rgba(143, 232, 220, 0.05) 70%, transparent);
+  will-change: transform;
   animation: mist-drift 26s ease-in-out infinite alternate;
 }
 
@@ -142,18 +152,15 @@ input {
   color: var(--faded);
 }
 
-.mono {
-  font-family: var(--font-mono);
-}
-
 /* ===== Painéis ===== */
+/* Sem backdrop-filter: o fundo é opaco o bastante para dispensar o blur
+   (blur de tela cheia sobre a névoa animada custa caro em GPU móvel). */
 .panel {
-  background: linear-gradient(160deg, rgba(27, 36, 64, 0.75), rgba(20, 27, 46, 0.9));
+  background: var(--surface-panel);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   padding: 20px;
   box-shadow: var(--shadow-panel);
-  backdrop-filter: blur(8px);
 }
 
 /* ===== Botões ===== */
@@ -192,24 +199,10 @@ input {
   box-shadow: var(--glow-lantern);
 }
 
-.btn-primary:hover:not(:disabled) {
-  box-shadow: 0 0 34px rgba(240, 169, 60, 0.5);
-}
-
 .btn-ghost {
   border-color: var(--line-strong);
   color: var(--parchment);
   background: rgba(233, 226, 208, 0.04);
-}
-
-.btn-ghost:hover:not(:disabled) {
-  background: rgba(233, 226, 208, 0.09);
-}
-
-.btn-danger {
-  background: linear-gradient(180deg, #f2778d, var(--danger));
-  color: #33060e;
-  box-shadow: 0 0 24px rgba(232, 93, 117, 0.3);
 }
 
 .btn-block {
@@ -247,7 +240,7 @@ input {
 }
 
 .input::placeholder {
-  color: rgba(139, 147, 167, 0.6);
+  color: var(--faded-soft);
 }
 
 .input:focus {
@@ -284,16 +277,13 @@ input {
   place-items: center;
   font-size: 22px;
   color: var(--flame);
-  background: radial-gradient(circle at 32% 28%, var(--mist-raised), var(--abyss-deep));
+  background: var(--surface-disc);
   border: 1.5px solid var(--line-strong);
   transition:
     border-color 0.2s,
     box-shadow 0.25s,
+    outline-color 0.2s,
     transform 0.15s var(--ease-out);
-}
-
-button.medallion:not(:disabled) .medallion-disc:hover {
-  transform: translateY(-2px);
 }
 
 .medallion-name {
@@ -311,15 +301,29 @@ button.medallion:not(:disabled) .medallion-disc:hover {
   opacity: 0.4;
 }
 
+/* Seleção: glow âmbar + contorno (indicador redundante de forma,
+   para não depender só de cor). */
 .medallion.is-selected .medallion-disc {
   border-color: var(--lantern);
   box-shadow: var(--glow-lantern);
+  outline: 2px solid var(--lantern);
+  outline-offset: 2px;
 }
 
 .medallion.is-conspirator .medallion-disc {
   border-color: var(--eclipse);
   box-shadow: var(--glow-eclipse);
   color: var(--eclipse);
+}
+
+/* Conspirador + selecionado coexistem: ciano identifica a facção,
+   o contorno âmbar identifica a seleção. */
+.medallion.is-conspirator.is-selected .medallion-disc {
+  border-color: var(--eclipse);
+  box-shadow: var(--glow-eclipse);
+  color: var(--eclipse);
+  outline: 2px solid var(--lantern);
+  outline-offset: 2px;
 }
 
 .medallion-badge {
@@ -347,11 +351,13 @@ button.medallion:not(:disabled) .medallion-disc:hover {
   border-color: rgba(143, 232, 220, 0.5);
 }
 
+/* Folga suficiente entre discos (56px) dentro de células de 76px
+   para o contorno de seleção nunca encostar no vizinho. */
 .players-grid {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 14px 6px;
+  gap: 16px 10px;
 }
 
 /* ===== Faróis (trilha de expedições) ===== */
@@ -389,18 +395,39 @@ button.medallion:not(:disabled) .medallion-disc:hover {
   height: 12px;
   border-radius: 50%;
   background: rgba(233, 226, 208, 0.12);
-  transition: background 0.4s, box-shadow 0.4s;
+  transition: background 0.4s;
+}
+
+/* O halo vive num pseudo-elemento com box-shadow ESTÁTICO;
+   só a opacidade anima — nada de recalcular sombra por frame. */
+.beacon-light::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 50%;
+  box-shadow: 0 0 16px 2px rgba(255, 217, 138, 0.8);
+  opacity: 0;
+  transition: opacity 0.4s;
+  pointer-events: none;
 }
 
 .beacon.is-current .beacon-light {
   background: rgba(255, 217, 138, 0.5);
-  box-shadow: 0 0 12px rgba(255, 217, 138, 0.45);
+}
+
+.beacon.is-current .beacon-light::after {
+  opacity: 0.4;
+  will-change: opacity;
   animation: beacon-pulse 2.2s ease-in-out infinite;
 }
 
 .beacon.is-lit .beacon-light {
   background: var(--flame);
-  box-shadow: 0 0 16px rgba(255, 217, 138, 0.8), 0 0 40px rgba(240, 169, 60, 0.5);
+}
+
+.beacon.is-lit .beacon-light::after {
+  box-shadow: 0 0 16px 2px rgba(255, 217, 138, 0.8), 0 0 40px 4px rgba(240, 169, 60, 0.5);
+  opacity: 1;
 }
 
 .beacon.is-doused .beacon-tower {
@@ -409,7 +436,11 @@ button.medallion:not(:disabled) .medallion-disc:hover {
 
 .beacon.is-doused .beacon-light {
   background: var(--eclipse);
-  box-shadow: 0 0 12px rgba(143, 232, 220, 0.55);
+}
+
+.beacon.is-doused .beacon-light::after {
+  box-shadow: 0 0 14px 2px rgba(143, 232, 220, 0.55);
+  opacity: 1;
 }
 
 .beacon-size {
@@ -429,10 +460,10 @@ button.medallion:not(:disabled) .medallion-disc:hover {
 @keyframes beacon-pulse {
   0%,
   100% {
-    box-shadow: 0 0 10px rgba(255, 217, 138, 0.3);
+    opacity: 0.32;
   }
   50% {
-    box-shadow: 0 0 22px rgba(255, 217, 138, 0.7);
+    opacity: 1;
   }
 }
 
@@ -484,6 +515,32 @@ button.medallion:not(:disabled) .medallion-disc:hover {
   box-shadow: 0 0 8px rgba(255, 217, 138, 0.8);
 }
 
+/* Variantes de chip por facção / severidade */
+.chip--flame {
+  border-color: rgba(240, 169, 60, 0.5);
+  background: var(--lantern-dim);
+}
+
+.chip--eclipse {
+  border-color: rgba(143, 232, 220, 0.5);
+  background: var(--eclipse-dim);
+}
+
+.chip--eclipse .dot {
+  background: var(--eclipse);
+  box-shadow: 0 0 8px rgba(143, 232, 220, 0.8);
+}
+
+.chip--danger .dot {
+  background: var(--danger);
+  box-shadow: 0 0 8px rgba(232, 93, 117, 0.8);
+}
+
+.chip--danger {
+  border-color: rgba(232, 93, 117, 0.55);
+  background: var(--danger-dim);
+}
+
 /* ===== Cartas de votação / expedição ===== */
 .choice-row {
   display: grid;
@@ -499,14 +556,10 @@ button.medallion:not(:disabled) .medallion-disc:hover {
   padding: 22px 12px 18px;
   border-radius: var(--radius-lg);
   border: 1.5px solid var(--line-strong);
-  background: linear-gradient(170deg, var(--mist-raised), var(--abyss-deep));
+  background: var(--surface-card);
   font-weight: 600;
   transition: transform 0.15s var(--ease-out), border-color 0.2s, box-shadow 0.25s;
   -webkit-tap-highlight-color: transparent;
-}
-
-.choice-card:hover:not(:disabled) {
-  transform: translateY(-3px);
 }
 
 .choice-card:active:not(:disabled) {
@@ -523,25 +576,34 @@ button.medallion:not(:disabled) .medallion-disc:hover {
   line-height: 1;
 }
 
-.choice-approve:hover:not(:disabled),
 .choice-approve.is-picked {
   border-color: var(--lantern);
   box-shadow: var(--glow-lantern);
 }
 
-.choice-reject:hover:not(:disabled),
 .choice-reject.is-picked {
   border-color: var(--danger);
-  box-shadow: 0 0 24px rgba(232, 93, 117, 0.35);
+  box-shadow: var(--glow-danger);
 }
 
-.choice-sabotage:hover:not(:disabled),
 .choice-sabotage.is-picked {
   border-color: var(--eclipse);
   box-shadow: var(--glow-eclipse);
 }
 
+/* ===== Área de ação grudada ao rodapé ===== */
+.sticky-actions {
+  position: sticky;
+  bottom: max(12px, env(safe-area-inset-bottom));
+  z-index: 5;
+  padding-top: 14px;
+  padding-bottom: 6px;
+  background: linear-gradient(to bottom, transparent, var(--abyss) 34%);
+}
+
 /* ===== Revelações ===== */
+/* Sem backdrop-filter (ver .panel): o scrim mais escuro dá o mesmo
+   isolamento visual sem custo de GPU. */
 .overlay {
   position: fixed;
   inset: 0;
@@ -550,8 +612,27 @@ button.medallion:not(:disabled) .medallion-disc:hover {
   align-items: center;
   justify-content: center;
   padding: 24px;
-  background: rgba(6, 9, 16, 0.82);
-  backdrop-filter: blur(10px);
+  background: rgba(6, 9, 16, 0.93);
+}
+
+/* Reconexão: mesmo scrim, mas captura todo o input até voltar a conexão. */
+.overlay-blocking {
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(6, 9, 16, 0.95);
+  pointer-events: all;
+  touch-action: none;
+  overscroll-behavior: contain;
+  cursor: progress;
+}
+
+.overlay-blocking > * {
+  cursor: auto;
 }
 
 .overlay-card {
@@ -605,7 +686,7 @@ button.medallion:not(:disabled) .medallion-disc:hover {
   place-items: center;
   font-size: 26px;
   border: 1.5px solid var(--line-strong);
-  background: linear-gradient(170deg, var(--mist-raised), var(--abyss-deep));
+  background: var(--surface-card);
 }
 
 .reveal-card.is-light {
@@ -627,23 +708,35 @@ button.medallion:not(:disabled) .medallion-disc:hover {
   border-radius: var(--radius-lg);
   padding: 34px 26px;
   text-align: center;
-  border: 1.5px solid;
+  border: 1.5px solid var(--line-strong);
+  background: var(--surface-card);
+  box-shadow: var(--shadow-panel);
+}
+
+/* O verso usa .panel no markup: aqui ele recebe a MESMA geometria e
+   elevação das faces de facção, para o flip não trocar de peça. */
+.role-face.panel {
+  padding: 34px 26px;
+  border: 1.5px solid var(--line-strong);
+  border-radius: var(--radius-lg);
+  background: var(--surface-card);
+  box-shadow: var(--shadow-panel);
 }
 
 .role-face.sentinela {
   border-color: rgba(240, 169, 60, 0.6);
   background:
     radial-gradient(80% 60% at 50% 0%, rgba(240, 169, 60, 0.16), transparent 70%),
-    linear-gradient(170deg, var(--mist-raised), var(--abyss-deep));
-  box-shadow: var(--glow-lantern);
+    var(--surface-card);
+  box-shadow: var(--shadow-panel), var(--glow-lantern);
 }
 
 .role-face.eclipse {
   border-color: rgba(143, 232, 220, 0.55);
   background:
     radial-gradient(80% 60% at 50% 0%, rgba(143, 232, 220, 0.14), transparent 70%),
-    linear-gradient(170deg, var(--mist-raised), var(--abyss-deep));
-  box-shadow: var(--glow-eclipse);
+    var(--surface-card);
+  box-shadow: var(--shadow-panel), var(--glow-eclipse);
 }
 
 /* ===== Histórico ===== */
@@ -767,11 +860,14 @@ button.medallion:not(:disabled) .medallion-disc:hover {
   text-shadow: 0 0 34px rgba(240, 169, 60, 0.4);
 }
 
+/* O drop-shadow é estático (rasterizado uma vez); a chama tremula
+   apenas em transform + opacity, ambos de composição. */
 .flame-mark {
   width: 46px;
   height: 46px;
   margin: 0 auto;
   filter: drop-shadow(0 0 14px rgba(240, 169, 60, 0.65));
+  will-change: transform, opacity;
   animation: flicker 3.4s ease-in-out infinite;
 }
 
@@ -779,22 +875,22 @@ button.medallion:not(:disabled) .medallion-disc:hover {
   0%,
   100% {
     transform: scale(1);
-    filter: drop-shadow(0 0 12px rgba(240, 169, 60, 0.55));
+    opacity: 0.9;
   }
   38% {
     transform: scale(1.04) rotate(-1.5deg);
-    filter: drop-shadow(0 0 20px rgba(240, 169, 60, 0.8));
+    opacity: 1;
   }
   70% {
     transform: scale(0.98) rotate(1deg);
-    filter: drop-shadow(0 0 10px rgba(240, 169, 60, 0.5));
+    opacity: 0.84;
   }
 }
 
 /* ===== Avatar picker ===== */
 .avatar-row {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   flex-wrap: wrap;
   justify-content: center;
 }
@@ -807,18 +903,16 @@ button.medallion:not(:disabled) .medallion-disc:hover {
   place-items: center;
   font-size: 19px;
   color: var(--flame);
-  background: radial-gradient(circle at 32% 28%, var(--mist-raised), var(--abyss-deep));
+  background: var(--surface-disc);
   border: 1.5px solid var(--line-strong);
   transition: border-color 0.15s, box-shadow 0.2s, transform 0.15s var(--ease-out);
-}
-
-.avatar-option:hover {
-  transform: translateY(-2px);
 }
 
 .avatar-option.is-selected {
   border-color: var(--lantern);
   box-shadow: var(--glow-lantern);
+  outline: 2px solid var(--lantern);
+  outline-offset: 2px;
 }
 
 /* ===== Código da sala ===== */
@@ -843,6 +937,7 @@ button.medallion:not(:disabled) .medallion-disc:hover {
 .tutorial-dots {
   display: flex;
   justify-content: center;
+  align-items: center;
   gap: 8px;
 }
 
@@ -853,6 +948,91 @@ button.medallion:not(:disabled) .medallion-disc:hover {
 .tutorial-dots .pip.is-active {
   background: var(--flame);
   box-shadow: 0 0 8px rgba(255, 217, 138, 0.7);
+}
+
+/* Botão-pai do ponto: alvo de toque de 44px sem inchar o ponto. */
+.dot-button,
+.tutorial-dots button:not(.pip) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ===== Toque / hover ===== */
+/* Todo hover decorativo fica atrás de (hover: hover): no touch o
+   estado :hover gruda e faz o item parecer selecionado. */
+@media (hover: hover) and (pointer: fine) {
+  .btn-primary:hover:not(:disabled) {
+    box-shadow: 0 0 34px rgba(240, 169, 60, 0.5);
+  }
+
+  .btn-ghost:hover:not(:disabled) {
+    background: rgba(233, 226, 208, 0.09);
+  }
+
+  button.medallion:not(:disabled) .medallion-disc:hover {
+    transform: translateY(-2px);
+  }
+
+  /* :not(:active) preserva o "afundar" do clique, que vem antes no arquivo. */
+  .choice-card:hover:not(:disabled):not(:active) {
+    transform: translateY(-3px);
+  }
+
+  .choice-approve:hover:not(:disabled) {
+    border-color: var(--lantern);
+    box-shadow: var(--glow-lantern);
+  }
+
+  .choice-reject:hover:not(:disabled) {
+    border-color: var(--danger);
+    box-shadow: var(--glow-danger);
+  }
+
+  .choice-sabotage:hover:not(:disabled) {
+    border-color: var(--eclipse);
+    box-shadow: var(--glow-eclipse);
+  }
+
+  .avatar-option:hover {
+    transform: translateY(-2px);
+  }
+}
+
+/* Alvos mínimos de 44px em telas de toque. */
+@media (pointer: coarse) {
+  .btn-sm {
+    min-height: 44px;
+    padding: 0 16px;
+  }
+
+  /* Quando o próprio .pip é o botão, a área clicável cresce por
+     pseudo-elemento (sem mexer no tamanho visível do ponto). */
+  .tutorial-dots button.pip {
+    position: relative;
+  }
+
+  .tutorial-dots button.pip::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 44px;
+    height: 44px;
+    transform: translate(-50%, -50%);
+  }
+
+  /* ...e os pontos se afastam para os alvos de 44px não se sobreporem. */
+  .tutorial-dots:has(> button.pip) {
+    gap: 36px;
+  }
 }
 
 /* ===== Utilidades ===== */

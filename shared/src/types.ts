@@ -40,6 +40,8 @@ export interface MissionRecord {
   failCount: number;
   failsRequired: number;
   outcome: MissionOutcome;
+  /** Segredo até o fim da partida: quem jogou Apagar. Vazio fora de gameOver. */
+  saboteurs: string[];
 }
 
 export interface RoundHistory {
@@ -64,6 +66,8 @@ export interface GameState {
   /** Jogadores que já confirmaram a visualização do próprio papel. */
   roleAcks: string[];
   proposedTeam: string[];
+  /** Rascunho público da patrulha, editado ao vivo pelo comandante em teamSelect. */
+  draftTeam: string[];
   /** Segredo até todos votarem. */
   votes: Record<string, boolean>;
   /** Segredo para sempre (revelado apenas agregado): true = Acender. */
@@ -77,6 +81,8 @@ export interface GameState {
   winReason: WinReason | null;
   /** Quantas partidas já foram jogadas nesta sala (gira o comandante inicial). */
   gamesPlayed: number;
+  /** Placar acumulado da noite — sobrevive a novas partidas na mesma sala. */
+  tally: { sentinela: number; eclipse: number };
 }
 
 /** Visão pública de um jogador (sem papel). */
@@ -117,6 +123,7 @@ export interface PlayerView {
   failsRequired: number[];
   eclipseCount: number;
   proposedTeam: string[];
+  draftTeam: string[];
   votesCast: number;
   cardsPlayed: number;
   lastVote: VoteRecord | null;
@@ -127,6 +134,7 @@ export interface PlayerView {
   /** Revelação final: todos os papéis, apenas em gameOver. */
   rolesRevealed: Record<string, Faction> | null;
   gamesPlayed: number;
+  tally: { sentinela: number; eclipse: number };
 }
 
 export type GameErrorCode =

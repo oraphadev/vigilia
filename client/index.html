@@ -9,19 +9,90 @@
       content="VIGÍLIA — jogo de dedução social. Mantenha as luzes de Lumen acesas… ou apague-as por dentro."
     />
     <title>VIGÍLIA — Mantenha as luzes acesas</title>
+    <style>
+      html,
+      body,
+      #root {
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        background: #0a0e1a;
+      }
+      .boot {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 18px;
+        background: #0a0e1a;
+        color: #98a1b6;
+        font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+        font-size: 15px;
+        letter-spacing: 0.04em;
+        text-align: center;
+        padding: 24px;
+      }
+      .boot svg {
+        width: 46px;
+        height: 46px;
+        filter: drop-shadow(0 0 14px rgba(240, 169, 60, 0.65));
+        animation: boot-flicker 3.4s ease-in-out infinite;
+      }
+      @keyframes boot-flicker {
+        0%,
+        100% {
+          transform: scale(1);
+          opacity: 0.9;
+        }
+        38% {
+          transform: scale(1.04);
+          opacity: 1;
+        }
+        70% {
+          transform: scale(0.98);
+          opacity: 0.84;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .boot svg {
+          animation: none;
+        }
+      }
+    </style>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Marcellus&family=Albert+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap"
-      rel="stylesheet"
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=Marcellus&family=Albert+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap"
+      onload="this.onload=null;this.rel='stylesheet'"
     />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Marcellus&family=Albert+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap"
+      />
+    </noscript>
     <link
       rel="icon"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='%230a0e1a'/%3E%3Cpath d='M16 6c3 4 5 6.5 5 10a5 5 0 1 1-10 0c0-3.5 2-6 5-10z' fill='%23f0a93c'/%3E%3C/svg%3E"
     />
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div class="boot" role="status" aria-live="polite">
+        <svg viewBox="0 0 32 32" aria-hidden="true">
+          <path
+            d="M16 3c4.2 5.4 7 9 7 13.8A7 7 0 1 1 9 16.8C9 12 11.8 8.4 16 3z"
+            fill="#f0a93c"
+          />
+        </svg>
+        Acendendo as lanternas…
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

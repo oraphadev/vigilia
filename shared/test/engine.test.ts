@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  abortGame,
   ackRole,
   addPlayer,
   castVote,
@@ -15,6 +16,7 @@ import {
   removePlayer,
   returnToLobby,
   setConnected,
+  setDraft,
   startGame,
   TEAM_SIZES,
 } from '../src/index.js';
@@ -77,6 +79,19 @@ describe('lobby', () => {
     const state = createGame('ABCDE', { id: 'p0', name: 'Ana', avatar: 0 });
     for (let i = 1; i < 5; i++) addPlayer(state, { id: `p${i}`, name: `J${i}`, avatar: i });
     expect(() => startGame(state, 'p1', Math.random)).toThrowError(/anfitrião/);
+  });
+
+  it('entrar com a partida em andamento dá GAME_IN_PROGRESS humanizado', () => {
+    const state = makeGame(5);
+    try {
+      addPlayer(state, { id: 'p9', name: 'Atrasado', avatar: 0 });
+      expect.unreachable('addPlayer deveria falhar');
+    } catch (error) {
+      expect(error).toBeInstanceOf(GameError);
+      expect((error as GameError).code).toBe('GAME_IN_PROGRESS');
+      expect((error as GameError).message).toMatch(/próxima partida/);
+    }
+    expect(state.players).toHaveLength(5);
   });
 
   it('migra o anfitrião ao remover o atual', () => {
@@ -266,5 +281,112 @@ describe('fim e reinício', () => {
     migrateHost(state);
     expect(state.players.find((p) => p.id === 'p0')!.isHost).toBe(false);
     expect(state.players.some((p) => p.isHost && p.connected)).toBe(true);
+  });
+});
+
+describe('autópsia (autoria das sabotagens)', () => {
+  it('registra quem apagou o farol em cada expedição', () => {
+    const state = makeGame(5);
+    const saboteur = eclipseIds(state)[0]!;
+    runMission(state, 1);
+    expect(state.lastMission!.saboteurs).toEqual([saboteur]);
+    expect(state.history[0]!.mission!.saboteurs).toEqual([saboteur]);
+  });
+
+  it('expedição limpa não tem sabotadores', () => {
+    const state = makeGame(5);
+    runMission(state, 0);
+    expect(state.lastMission!.saboteurs).toEqual([]);
+  });
+});
+
+describe('placar da noite', () => {
+  it('começa zerado, incrementa o vencedor e sobrevive ao returnToLobby', () => {
+    const state = makeGame(5);
+    expect(state.tally).toEqual({ sentinela: 0, eclipse: 0 });
+    runMission(state, 1);
+    runMission(state, 1);
+    runMission(state, 1);
+    expect(state.tally).toEqual({ sentinela: 0, eclipse: 1 });
+    returnToLobby(state, 'p0');
+    expect(state.tally).toEqual({ sentinela: 0, eclipse: 1 });
+    startGame(state, 'p0', seededRng(9));
+    for (const p of state.players) ackRole(state, p.id);
+    runMission(state, 0);
+    runMission(state, 0);
+    runMission(state, 0);
+    expect(state.tally).toEqual({ sentinela: 1, eclipse: 1 });
+  });
+});
+
+describe('rascunho de patrulha', () => {
+  it('só o comandante rascunha, e só em teamSelect', () => {
+    const state = makeGame(5);
+    const lead = leaderId(state)!;
+    const other = state.players.find((p) => p.id !== lead)!.id;
+    expect(() => setDraft(state, other, ['p0'])).toThrowError(/comandante/);
+    setDraft(state, lead, ['p0']);
+    expect(state.draftTeam).toEqual(['p0']);
+    proposeTeam(state, lead, ['p0', 'p1']);
+    expect(() => setDraft(state, lead, ['p2'])).toThrowError(GameError);
+  });
+
+  it('descarta ids inexistentes e corta no tamanho da patrulha, sem erro', () => {
+    const state = makeGame(5);
+    const lead = leaderId(state)!;
+    setDraft(state, lead, ['p0', 'fantasma', 'p1', 'p2', 'p0']);
+    expect(state.draftTeam).toEqual(['p0', 'p1']);
+    setDraft(state, lead, []);
+    expect(state.draftTeam).toEqual([]);
+  });
+
+  it('é limpo ao propor, ao resolver a votação e ao resolver a expedição', () => {
+    const state = makeGame(5);
+    const lead = leaderId(state)!;
+    setDraft(state, lead, ['p0', 'p1']);
+    proposeTeam(state, lead, ['p0', 'p1']);
+    expect(state.draftTeam).toEqual([]);
+    for (const p of state.players) castVote(state, p.id, false);
+    expect(state.draftTeam).toEqual([]);
+    setDraft(state, leaderId(state)!, ['p2']);
+    runMission(state, 0);
+    expect(state.draftTeam).toEqual([]);
+  });
+});
+
+describe('encerrar partida travada', () => {
+  for (const phase of ['roleReveal', 'teamSelect', 'voting', 'mission'] as const) {
+    it(`anfitrião aborta a partida na fase ${phase}`, () => {
+      const state = createGame('ABCDE', { id: 'p0', name: 'Ana', avatar: 0 });
+      for (let i = 1; i < 5; i++) addPlayer(state, { id: `p${i}`, name: `J${i}`, avatar: i });
+      startGame(state, 'p0', seededRng(5));
+      if (phase !== 'roleReveal') for (const p of state.players) ackRole(state, p.id);
+      if (phase === 'voting' || phase === 'mission') {
+        proposeTeam(state, leaderId(state)!, ['p0', 'p1']);
+      }
+      if (phase === 'mission') for (const p of state.players) castVote(state, p.id, true);
+      expect(state.phase).toBe(phase);
+
+      abortGame(state, 'p0');
+      expect(state.phase).toBe('lobby');
+      expect(state.roles).toEqual({});
+      expect(state.missionCards).toEqual({});
+      expect(state.votes).toEqual({});
+      expect(state.history).toEqual([]);
+      expect(state.lastMission).toBeNull();
+      expect(state.lastVote).toBeNull();
+      expect(state.players).toHaveLength(5);
+      // Partida abortada não tem vencedor: nada entra no placar.
+      expect(state.tally).toEqual({ sentinela: 0, eclipse: 0 });
+      expect(state.gamesPlayed).toBe(1);
+    });
+  }
+
+  it('recusa quem não é anfitrião e recusa no lobby', () => {
+    const state = makeGame(5);
+    expect(() => abortGame(state, 'p1')).toThrowError(/anfitrião/);
+    expect(state.phase).toBe('teamSelect');
+    abortGame(state, 'p0');
+    expect(() => abortGame(state, 'p0')).toThrowError(GameError);
   });
 });

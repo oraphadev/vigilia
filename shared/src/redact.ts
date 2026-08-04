@@ -1,6 +1,19 @@
 import { ECLIPSE_COUNT, failsRequiredTable, TEAM_SIZES } from './constants.js';
 import { leaderId } from './engine.js';
-import type { GameState, PlayerView, PublicPlayer } from './types.js';
+import type { GameState, MissionRecord, PlayerView, PublicPlayer, RoundHistory } from './types.js';
+
+/** Fora de gameOver a autoria da sabotagem é apagada — clonando, nunca por referência. */
+function redactMission(mission: MissionRecord, gameOver: boolean): MissionRecord {
+  return gameOver ? { ...mission, saboteurs: [...mission.saboteurs] } : { ...mission, saboteurs: [] };
+}
+
+function redactHistory(history: RoundHistory[], gameOver: boolean): RoundHistory[] {
+  return history.map((round) => ({
+    round: round.round,
+    attempts: round.attempts,
+    ...(round.mission ? { mission: redactMission(round.mission, gameOver) } : {}),
+  }));
+}
 
 /**
  * Produz a visão de UM jogador a partir do estado canônico.
@@ -49,14 +62,16 @@ export function viewFor(state: GameState, playerId: string): PlayerView {
     failsRequired: failsRequiredTable(state.players.length),
     eclipseCount: ECLIPSE_COUNT[state.players.length] ?? 0,
     proposedTeam: [...state.proposedTeam],
+    draftTeam: [...state.draftTeam],
     votesCast: Object.keys(state.votes).length,
     cardsPlayed: Object.keys(state.missionCards).length,
     lastVote: state.lastVote,
-    lastMission: state.lastMission,
-    history: state.history,
+    lastMission: state.lastMission ? redactMission(state.lastMission, gameOver) : null,
+    history: redactHistory(state.history, gameOver),
     winner: state.winner,
     winReason: state.winReason,
     rolesRevealed: gameOver && Object.keys(state.roles).length > 0 ? { ...state.roles } : null,
     gamesPlayed: state.gamesPlayed,
+    tally: { ...state.tally },
   };
 }

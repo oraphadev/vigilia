@@ -18,16 +18,20 @@ export interface ClientToServerEvents {
   'room:kick': (payload: { playerId: string }, ack: (reply: Reply) => void) => void;
   'game:start': (ack: (reply: Reply) => void) => void;
   'game:ackRole': (ack: (reply: Reply) => void) => void;
+  'game:draft': (payload: { team: string[] }, ack: (reply: Reply) => void) => void;
   'game:propose': (payload: { team: string[] }, ack: (reply: Reply) => void) => void;
   'game:vote': (payload: { approve: boolean }, ack: (reply: Reply) => void) => void;
   'game:card': (payload: { light: boolean }, ack: (reply: Reply) => void) => void;
   'game:playAgain': (ack: (reply: Reply) => void) => void;
+  'game:abort': (ack: (reply: Reply) => void) => void;
 }
 
 /** Contrato Socket.IO — servidor → cliente. */
 export interface ServerToClientEvents {
   state: (view: PlayerView) => void;
   kicked: () => void;
+  /** Outra aba assumiu esta sessão — este socket vai cair; não reconecte. */
+  displaced: () => void;
 }
 
 export type Reply<T = undefined> =

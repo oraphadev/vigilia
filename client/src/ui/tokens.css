@@ -5,7 +5,7 @@
   --mist: #141b2e;
   --mist-raised: #1b2440;
   --line: rgba(233, 226, 208, 0.1);
-  --line-strong: rgba(233, 226, 208, 0.22);
+  --line-strong: rgba(233, 226, 208, 0.38);
 
   --lantern: #f0a93c;
   --flame: #ffd98a;
@@ -16,7 +16,8 @@
   --danger-dim: rgba(232, 93, 117, 0.15);
 
   --parchment: #e9e2d0;
-  --faded: #8b93a7;
+  --faded: #98a1b6;
+  --faded-soft: rgba(152, 161, 182, 0.65);
 
   /* Tipografia */
   --font-display: 'Marcellus', 'Georgia', serif;
@@ -28,9 +29,15 @@
   --radius-lg: 22px;
   --col-width: 560px;
 
+  /* Superfícies reutilizadas — um só gradiente por família de peça */
+  --surface-disc: radial-gradient(circle at 32% 28%, var(--mist-raised), var(--abyss-deep));
+  --surface-card: linear-gradient(170deg, var(--mist-raised), var(--abyss-deep));
+  --surface-panel: linear-gradient(160deg, rgba(25, 33, 59, 0.94), rgba(15, 21, 36, 0.97));
+
   --shadow-panel: 0 18px 50px -18px rgba(0, 0, 0, 0.65);
   --glow-lantern: 0 0 24px rgba(240, 169, 60, 0.35);
   --glow-eclipse: 0 0 24px rgba(143, 232, 220, 0.3);
+  --glow-danger: 0 0 24px rgba(232, 93, 117, 0.35);
 
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 }

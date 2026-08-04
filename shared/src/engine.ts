@@ -35,7 +35,7 @@ function shuffle<T>(items: T[], rng: Rng): T[] {
 
 function requirePhase(state: GameState, ...phases: GameState['phase'][]): void {
   if (!phases.includes(state.phase)) {
-    throw new GameError('WRONG_PHASE', `Ação inválida na fase ${state.phase}.`);
+    throw new GameError('WRONG_PHASE', 'Essa ação não vale neste momento da partida.');
   }
 }
 
@@ -74,6 +74,7 @@ export function createGame(code: string, host: Omit<PlayerState, 'connected' | '
     missionResults: Array(ROUNDS).fill(null),
     roleAcks: [],
     proposedTeam: [],
+    draftTeam: [],
     votes: {},
     missionCards: {},
     lastVote: null,
@@ -82,11 +83,17 @@ export function createGame(code: string, host: Omit<PlayerState, 'connected' | '
     winner: null,
     winReason: null,
     gamesPlayed: 0,
+    tally: { sentinela: 0, eclipse: 0 },
   };
 }
 
 export function addPlayer(state: GameState, player: Omit<PlayerState, 'connected' | 'isHost'>): void {
-  requirePhase(state, 'lobby');
+  if (state.phase !== 'lobby') {
+    throw new GameError(
+      'GAME_IN_PROGRESS',
+      'A vigília já começou nesta sala. Peça para te esperarem na próxima partida.',
+    );
+  }
   if (state.players.length >= MAX_PLAYERS) {
     throw new GameError('ROOM_FULL', `A sala comporta no máximo ${MAX_PLAYERS} vigilantes.`);
   }
@@ -146,6 +153,7 @@ export function startGame(state: GameState, hostId: string, rng: Rng): void {
   state.missionResults = Array(ROUNDS).fill(null);
   state.roleAcks = [];
   state.proposedTeam = [];
+  state.draftTeam = [];
   state.votes = {};
   state.missionCards = {};
   state.lastVote = null;
@@ -164,6 +172,27 @@ export function ackRole(state: GameState, playerId: string): void {
   }
 }
 
+/**
+ * Rascunho ao vivo da patrulha — só informativo, nunca compromete o comandante.
+ * Excesso de nomes é cortado em silêncio: rascunho não é ação inválida.
+ */
+export function setDraft(state: GameState, playerId: string, team: string[]): void {
+  requirePhase(state, 'teamSelect');
+  if (playerId !== leaderId(state)) {
+    throw new GameError('NOT_LEADER', 'Apenas o comandante monta a patrulha.');
+  }
+  const maxSize = TEAM_SIZES[state.players.length]?.[state.round] ?? 0;
+  const seen = new Set<string>();
+  const valid: string[] = [];
+  for (const id of team) {
+    if (seen.has(id) || !state.players.some((p) => p.id === id)) continue;
+    seen.add(id);
+    valid.push(id);
+    if (valid.length === maxSize) break;
+  }
+  state.draftTeam = valid;
+}
+
 export function proposeTeam(state: GameState, playerId: string, team: string[]): void {
   requirePhase(state, 'teamSelect');
   if (playerId !== leaderId(state)) {
@@ -179,6 +208,7 @@ export function proposeTeam(state: GameState, playerId: string, team: string[]):
     throw new GameError('INVALID_TEAM', `A patrulha desta expedição leva exatamente ${expectedSize} vigilantes.`);
   }
   state.proposedTeam = [...team];
+  state.draftTeam = [];
   state.votes = {};
   state.phase = 'voting';
 }
@@ -208,6 +238,7 @@ function resolveVote(state: GameState): void {
   state.lastVote = record;
   state.lastMission = null;
   state.votes = {};
+  state.draftTeam = [];
 
   if (approved) {
     state.missionCards = {};
@@ -255,12 +286,15 @@ function resolveMission(state: GameState): void {
     failCount,
     failsRequired: required,
     outcome,
+    // Autoria fica no estado canônico; a redação só a libera em gameOver.
+    saboteurs: state.proposedTeam.filter((id) => state.missionCards[id] === false),
   };
   state.missionResults[state.round] = outcome;
   state.history[state.history.length - 1]!.mission = record;
   state.lastMission = record;
   state.missionCards = {};
   state.proposedTeam = [];
+  state.draftTeam = [];
 
   const successes = state.missionResults.filter((r) => r === 'sucesso').length;
   const failures = state.missionResults.filter((r) => r === 'falha').length;
@@ -279,14 +313,14 @@ function endGame(state: GameState, winner: Faction, reason: GameState['winReason
   state.winReason = reason;
   state.phase = 'gameOver';
   state.proposedTeam = [];
+  state.draftTeam = [];
   state.votes = {};
   state.missionCards = {};
+  state.tally[winner] += 1;
 }
 
-/** Volta a sala ao lobby preservando os jogadores, pronta para nova partida. */
-export function returnToLobby(state: GameState, hostId: string): void {
-  requirePhase(state, 'gameOver');
-  requireHost(state, hostId);
+/** Limpa a partida e devolve a sala ao lobby. O placar da noite é preservado. */
+function resetToLobby(state: GameState): void {
   state.gamesPlayed += 1;
   state.phase = 'lobby';
   state.roles = {};
@@ -295,6 +329,7 @@ export function returnToLobby(state: GameState, hostId: string): void {
   state.missionResults = Array(ROUNDS).fill(null);
   state.roleAcks = [];
   state.proposedTeam = [];
+  state.draftTeam = [];
   state.votes = {};
   state.missionCards = {};
   state.lastVote = null;
@@ -302,4 +337,21 @@ export function returnToLobby(state: GameState, hostId: string): void {
   state.history = [];
   state.winner = null;
   state.winReason = null;
+}
+
+/** Volta a sala ao lobby preservando os jogadores, pronta para nova partida. */
+export function returnToLobby(state: GameState, hostId: string): void {
+  requirePhase(state, 'gameOver');
+  requireHost(state, hostId);
+  resetToLobby(state);
+}
+
+/**
+ * Escotilha de emergência do anfitrião: encerra uma partida travada (jogador
+ * sumido, sala presa numa fase) sem vencedor — nada é somado ao placar.
+ */
+export function abortGame(state: GameState, hostId: string): void {
+  requirePhase(state, 'roleReveal', 'teamSelect', 'voting', 'mission', 'gameOver');
+  requireHost(state, hostId);
+  resetToLobby(state);
 }

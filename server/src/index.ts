@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import express from 'express';
 import { Server, type Socket } from 'socket.io';
 import {
+  abortGame,
   ackRole,
   castVote,
   type ClientToServerEvents,
@@ -15,6 +16,7 @@ import {
   returnToLobby,
   type ServerToClientEvents,
   setConnected,
+  setDraft,
   migrateHost,
   startGame,
   viewFor,
@@ -75,6 +77,8 @@ function attach(socket: Socket, data: SocketData, room: Room, playerId: string):
   // Derruba um socket antigo do mesmo jogador (ex.: outra aba).
   const previous = room.sockets.get(playerId);
   if (previous && previous !== socket.id) {
+    // Avisa antes de derrubar: sem isso a aba antiga reconecta e derruba esta.
+    io.to(previous).emit('displaced');
     io.in(previous).disconnectSockets(true);
   }
   data.room = room;
@@ -152,6 +156,12 @@ io.on('connection', (socket) => {
     act(socket, data, ack, (room, playerId) => ackRole(room.state, playerId)),
   );
 
+  socket.on('game:draft', ({ team }, ack) =>
+    act(socket, data, ack, (room, playerId) =>
+      setDraft(room.state, playerId, Array.isArray(team) ? team.map(String) : []),
+    ),
+  );
+
   socket.on('game:propose', ({ team }, ack) =>
     act(socket, data, ack, (room, playerId) =>
       proposeTeam(room.state, playerId, Array.isArray(team) ? team.map(String) : []),
@@ -168,6 +178,10 @@ io.on('connection', (socket) => {
 
   socket.on('game:playAgain', (ack) =>
     act(socket, data, ack, (room, playerId) => returnToLobby(room.state, playerId)),
+  );
+
+  socket.on('game:abort', (ack) =>
+    act(socket, data, ack, (room, playerId) => abortGame(room.state, playerId)),
   );
 
   socket.on('disconnect', () => {

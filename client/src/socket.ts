@@ -6,6 +6,9 @@ export const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io({
   reconnection: true,
   reconnectionDelay: 500,
   reconnectionDelayMax: 4000,
+  // WebSocket primeiro: elimina o round-trip de long-polling no boot.
+  // Polling continua como plano B em redes que bloqueiam ws.
+  transports: ['websocket', 'polling'],
 });
 
 export class ServerRejection extends Error {

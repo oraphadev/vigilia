@@ -8,6 +8,7 @@ import {
   leaderId,
   playCard,
   proposeTeam,
+  setDraft,
   startGame,
   viewFor,
 } from '../src/index.js';
@@ -83,6 +84,39 @@ describe('redação anti-cheat', () => {
     // resultado agregado: 1 falha, sem autoria
     expect(view.lastMission?.failCount).toBe(1);
     expect(JSON.stringify(view.lastMission)).not.toContain(saboteur === 'p0' ? '"p0":' : `"${saboteur}":`);
+  });
+
+  it('a autoria da sabotagem só aparece no fim de jogo', () => {
+    const state = makeGame();
+    const saboteur = eclipseIds(state)[0]!;
+    const loyal = state.players.find((p) => state.roles[p.id] === 'sentinela')!.id;
+    proposeTeam(state, leaderId(state)!, [saboteur, loyal]);
+    for (const p of state.players) castVote(state, p.id, true);
+    playCard(state, saboteur, false);
+    playCard(state, loyal, true);
+
+    const during = viewFor(state, loyal);
+    expect(during.lastMission!.saboteurs).toEqual([]);
+    expect(during.history[0]!.mission!.saboteurs).toEqual([]);
+    // A redação clona: o estado canônico segue com a autoria intacta.
+    expect(state.lastMission!.saboteurs).toEqual([saboteur]);
+    expect(state.history[0]!.mission!.saboteurs).toEqual([saboteur]);
+
+    state.winner = 'sentinela';
+    state.winReason = 'expedicoes';
+    state.phase = 'gameOver';
+    const after = viewFor(state, loyal);
+    expect(after.lastMission!.saboteurs).toEqual([saboteur]);
+    expect(after.history[0]!.mission!.saboteurs).toEqual([saboteur]);
+  });
+
+  it('expõe placar da noite e rascunho da patrulha', () => {
+    const state = makeGame();
+    state.tally = { sentinela: 2, eclipse: 1 };
+    setDraft(state, leaderId(state)!, ['p0']);
+    const view = viewFor(state, 'p2');
+    expect(view.tally).toEqual({ sentinela: 2, eclipse: 1 });
+    expect(view.draftTeam).toEqual(['p0']);
   });
 
   it('papéis são revelados a todos apenas no fim de jogo', () => {

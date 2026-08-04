@@ -1,61 +1,48 @@
 import { motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { MAX_NAME_LENGTH } from '@vigilia/shared';
-import { AVATAR_GLYPHS, FlameMark, Modal, Stage } from '../components/shared.js';
+import { AVATAR_GLYPHS, FlameMark, Stage } from '../components/shared.js';
+import { HowToPlay } from '../components/HowToPlay.js';
 import { useStore } from '../store.js';
 
-const TUTORIAL_PAGES: { title: string; body: string }[] = [
-  {
-    title: 'Bem-vindo a Lumen',
-    body: 'A última cidade flutua sobre um mar de névoa que devora tudo o que a luz não alcança. Cinco faróis a mantêm viva — e alguém entre vocês quer apagá-los.',
-  },
-  {
-    title: 'Dois lados, um segredo',
-    body: 'A maioria são Sentinelas da Chama, leais à cidade. Alguns são agentes do Eclipse: eles se conhecem, você não sabe quem são. Seu papel é secreto — observe, converse, desconfie.',
-  },
-  {
-    title: 'A patrulha e o voto',
-    body: 'A cada expedição, o Comandante da vez propõe uma patrulha. Todos votam: aprovar ou rejeitar. Empate rejeita. Cuidado — cinco rejeições seguidas entregam a cidade ao Eclipse.',
-  },
-  {
-    title: 'A expedição',
-    body: 'A patrulha aprovada age em segredo: Sentinelas sempre acendem o farol; agentes do Eclipse podem apagá-lo. Uma única sabotagem basta para a expedição falhar (algumas exigem duas — marcadas com •).',
-  },
-  {
-    title: 'Como vencer',
-    body: 'Acenda 3 faróis e os Sentinelas vencem. Apague 3 e o Eclipse toma a cidade. Ninguém é eliminado: a partida inteira é conversa, blefe e dedução.',
-  },
-];
+/** Lê ?sala=ABCDE uma única vez, já no primeiro render. */
+function invitedCodeFromUrl(): string {
+  return (new URLSearchParams(location.search).get('sala') ?? '').replace(/[^a-z0-9]/gi, '').toUpperCase().slice(0, 5);
+}
 
 export function Home() {
-  const { name, setName, avatar, setAvatar, createRoom, joinRoom, busy, tutorialSeen, markTutorialSeen } = useStore();
-  const [mode, setMode] = useState<'menu' | 'join'>('menu');
-  const [code, setCode] = useState('');
+  const { name, setName, avatar, setAvatar, createRoom, joinRoom, busy, tutorialSeen } = useStore();
+  const [invitedCode] = useState(invitedCodeFromUrl);
+  const invited = invitedCode.length > 0;
+
+  const [mode, setMode] = useState<'menu' | 'join'>(invited ? 'join' : 'menu');
+  const [code, setCode] = useState(invitedCode);
   const [tutorialOpen, setTutorialOpen] = useState(false);
-  const [page, setPage] = useState(0);
-
-  // Onboarding: abre o tutorial automaticamente na primeira visita.
-  useEffect(() => {
-    if (!tutorialSeen) setTutorialOpen(true);
-  }, [tutorialSeen]);
-
-  // Link de convite (?sala=ABCDE) pré-preenche o código.
-  useEffect(() => {
-    const invited = new URLSearchParams(location.search).get('sala');
-    if (invited) {
-      setCode(invited.toUpperCase().slice(0, 5));
-      setMode('join');
-    }
-  }, []);
+  const [nameTouched, setNameTouched] = useState(false);
+  const nameRef = useRef<HTMLInputElement>(null);
 
   const nameValid = name.trim().length >= 2;
   const codeValid = code.trim().length === 5;
 
-  function closeTutorial() {
-    setTutorialOpen(false);
-    setPage(0);
-    markTutorialSeen();
-  }
+  // Primeira visita abre o tutorial — mas nunca por cima de quem chegou por convite.
+  useEffect(() => {
+    if (!tutorialSeen && !invited) setTutorialOpen(true);
+  }, [tutorialSeen, invited]);
+
+  // Convidado sem nome: o campo certo já vem em foco.
+  useEffect(() => {
+    if (invited && !nameValid) nameRef.current?.focus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [invited]);
+
+  const nameMessage = nameValid
+    ? null
+    : invited
+      ? `Diga seu nome para entrar na sala ${invitedCode}.`
+      : nameTouched
+        ? 'Use ao menos 2 letras.'
+        : 'Escreva seu nome para começar.';
+  const nameInvalid = nameTouched && !nameValid;
 
   return (
     <Stage>
@@ -84,13 +71,27 @@ export function Home() {
           <label htmlFor="name">Seu nome de vigilante</label>
           <input
             id="name"
+            ref={nameRef}
             className="input"
             placeholder="Como a cidade vai te chamar?"
             value={name}
             maxLength={MAX_NAME_LENGTH}
             onChange={(e) => setName(e.target.value)}
+            onBlur={() => setNameTouched(true)}
             autoComplete="nickname"
+            enterKeyHint="next"
+            aria-invalid={nameInvalid || undefined}
+            aria-describedby={nameMessage ? 'name-help' : undefined}
           />
+          {nameMessage && (
+            <p
+              id="name-help"
+              aria-live="polite"
+              style={{ fontSize: 13, color: nameInvalid ? 'var(--danger)' : 'var(--faded)' }}
+            >
+              {nameMessage}
+            </p>
+          )}
         </div>
 
         <div className="field">
@@ -119,13 +120,17 @@ export function Home() {
             <button className="btn btn-ghost btn-block" disabled={!nameValid || busy} onClick={() => setMode('join')}>
               Entrar com código
             </button>
-            {!nameValid && <p className="muted center" style={{ fontSize: 13 }}>Escreva seu nome para começar.</p>}
           </div>
         ) : (
           <form
             className="stack"
             onSubmit={(e) => {
               e.preventDefault();
+              if (!nameValid) {
+                setNameTouched(true);
+                nameRef.current?.focus();
+                return;
+              }
               if (codeValid) void joinRoom(code);
             }}
           >
@@ -138,16 +143,17 @@ export function Home() {
                 value={code}
                 maxLength={5}
                 onChange={(e) => setCode(e.target.value.replace(/[^a-z0-9]/gi, '').toUpperCase())}
-                autoFocus
+                autoFocus={!invited}
                 autoComplete="off"
                 spellCheck={false}
+                enterKeyHint="go"
               />
             </div>
             <div className="row">
               <button type="button" className="btn btn-ghost" onClick={() => setMode('menu')}>
                 Voltar
               </button>
-              <button type="submit" className="btn btn-primary grow" disabled={!codeValid || busy}>
+              <button type="submit" className="btn btn-primary grow" disabled={!nameValid || !codeValid || busy}>
                 Entrar na sala
               </button>
             </div>
@@ -166,42 +172,7 @@ export function Home() {
         </button>
       </motion.footer>
 
-      <Modal open={tutorialOpen} onClose={closeTutorial} label="Como jogar">
-        <div className="stack" style={{ gap: 18 }}>
-          <p className="eyebrow">Como jogar · {page + 1} de {TUTORIAL_PAGES.length}</p>
-          <h2 className="display" style={{ fontSize: 26 }}>
-            {TUTORIAL_PAGES[page]!.title}
-          </h2>
-          <p style={{ minHeight: 96 }}>{TUTORIAL_PAGES[page]!.body}</p>
-          <div className="tutorial-dots">
-            {TUTORIAL_PAGES.map((_, i) => (
-              <button
-                key={i}
-                type="button"
-                aria-label={`Página ${i + 1}`}
-                className={`pip ${i === page ? 'is-active' : ''}`}
-                onClick={() => setPage(i)}
-              />
-            ))}
-          </div>
-          <div className="row">
-            {page > 0 && (
-              <button className="btn btn-ghost" onClick={() => setPage(page - 1)}>
-                Anterior
-              </button>
-            )}
-            {page < TUTORIAL_PAGES.length - 1 ? (
-              <button className="btn btn-primary grow" onClick={() => setPage(page + 1)}>
-                Continuar
-              </button>
-            ) : (
-              <button className="btn btn-primary grow" onClick={closeTutorial}>
-                Estou pronto
-              </button>
-            )}
-          </div>
-        </div>
-      </Modal>
+      <HowToPlay open={tutorialOpen} onClose={() => setTutorialOpen(false)} />
     </Stage>
   );
 }
