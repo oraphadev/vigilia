@@ -44,7 +44,7 @@ export function Lobby({ view }: { view: PlayerView }) {
     const text = `Entre na minha sala em VIGÍLIA. Código ${view.code}: ${inviteUrl}`;
     if (navigator.share) {
       try {
-        await navigator.share({ title: 'VIGÍLIA', text });
+        await navigator.share({ text });
       } catch {
         // Compartilhamento cancelado: nada a fazer.
       }
