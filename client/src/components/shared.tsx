@@ -106,7 +106,7 @@ function ReconnectOverlay() {
       aria-label="Reconectando"
     >
       <div className="stack center">
-        <span className="spinner" style={{ width: 28, height: 28 }} aria-hidden />
+        <span className="spinner" style={{ width: 28, height: 28, alignSelf: 'center' }} aria-hidden />
         <p style={{ fontWeight: 600 }}>Reacendendo a conexão…</p>
         <p className="muted" style={{ fontSize: 14 }}>
           Suas ações continuam valendo. Só um instante.

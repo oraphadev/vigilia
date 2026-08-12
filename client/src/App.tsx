@@ -22,7 +22,7 @@ export function App() {
     return (
       <Stage>
         <div className="stack center" style={{ paddingTop: '38vh' }}>
-          <span className="spinner" style={{ width: 28, height: 28 }} aria-hidden />
+          <span className="spinner" style={{ width: 28, height: 28, alignSelf: 'center' }} aria-hidden />
           <p className="muted">Acendendo as lanternas…</p>
         </div>
       </Stage>
